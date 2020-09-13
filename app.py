@@ -30,13 +30,20 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 
 
+class City(db.Model):
+    __tablename__ = 'cities'
+
+    id = db.Column(db.Integer, primary_key=True)
+    city = db.Column(db.String(120))
+    state = db.Column(db.String(120))
+    venues = db.relationship('Venue', backref='city')
+
+
 class Venue(db.Model):
     __tablename__ = 'venues'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
     address = db.Column(db.String(120))
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
@@ -47,6 +54,7 @@ class Venue(db.Model):
     seeking_description = db.Column(db.String(120))
     artists = db.relationship('Artist', secondary='shows',
                               backref=db.backref('venues', lazy=True))
+    city_id = db.Column(db.Integer, db.ForeignKey('cities.id'), nullable=False)
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -76,7 +84,7 @@ Show = db.Table('shows',
                 db.Column('artist_id', db.Integer, db.ForeignKey(
                     'artists.id'), primary_key=True),
                 db.Column('start_time', db.DateTime),
-                
+
                 )
 
 #----------------------------------------------------------------------------#
