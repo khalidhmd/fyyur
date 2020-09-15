@@ -120,6 +120,8 @@ def index():
 def venues():
     # TODO: replace with real venues data.
     #       num_shows should be aggregated based on number of upcoming shows per venue.
+    cities = City.query.join('venues').all()
+    print(cities[0].venues)
     data = [{
         "city": "San Francisco",
         "state": "CA",
@@ -141,6 +143,7 @@ def venues():
             "num_upcoming_shows": 0,
         }]
     }]
+    print(data)
     return render_template('pages/venues.html', areas=data)
 
 
