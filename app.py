@@ -261,10 +261,10 @@ def create_venue_submission():
     try:
         city = City.query.filter_by(
             city=request.form['city'], state=request.form['state']).first()
-        print(city.city)
+
         venue = Venue(
             name=request.form['name'], address=request.form['address'], phone=request.form['phone'], genres=request.form.getlist('genres'), facebook_link=request.form['facebook_link'])
-        if not city.city:
+        if not city:
             city = City(city=request.form['city'], state=request.form['state'])
             venue.city = city
             db.session.add(city)
@@ -273,9 +273,9 @@ def create_venue_submission():
             venue.city = city
             db.session.add(venue)
             db.session.commit()
-    except:
+    except Exception as err:
         db.session.rollback()
-        print('error')
+        print(err)
     finally:
         db.session.close()
     # TODO: modify data to be the data object returned from db insertion
