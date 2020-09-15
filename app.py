@@ -258,6 +258,13 @@ def create_venue_form():
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
     # TODO: insert form data as a new Venue record in the db, instead
+    city = City(city=request.form['city'], state=request.form['state'])
+    venue = Venue(
+        name=request.form['name'], address=request.form['address'], phone=request.form['phone'], genres=request.form.getlist('genres'), facebook_link=request.form['facebook_link'])
+    venue.city = city
+    db.session.add(city)
+    db.session.add(venue)
+    db.session.commit()
     # TODO: modify data to be the data object returned from db insertion
 
     # on successful db insert, flash success
@@ -574,6 +581,6 @@ if __name__ == '__main__':
 # Or specify port manually:
 '''
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+		port = int(os.environ.get('PORT', 5000))
+		app.run(host='0.0.0.0', port=port)
 '''
