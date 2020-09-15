@@ -258,18 +258,30 @@ def create_venue_form():
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
     # TODO: insert form data as a new Venue record in the db, instead
-    city = City(city=request.form['city'], state=request.form['state'])
-    venue = Venue(
-        name=request.form['name'], address=request.form['address'], phone=request.form['phone'], genres=request.form.getlist('genres'), facebook_link=request.form['facebook_link'])
-    venue.city = city
-    db.session.add(city)
-    db.session.add(venue)
-    db.session.commit()
+    try:
+        city = City.query.filter_by(
+            city=request.form['city'], state=request.form['state']).first()
+        print(city.city)
+        venue = Venue(
+            name=request.form['name'], address=request.form['address'], phone=request.form['phone'], genres=request.form.getlist('genres'), facebook_link=request.form['facebook_link'])
+        if not city.city:
+            city = City(city=request.form['city'], state=request.form['state'])
+            venue.city = city
+            db.session.add(city)
+            db.session.commit()
+        else:
+            venue.city = city
+            db.session.add(venue)
+            db.session.commit()
+    except:
+        db.session.rollback()
+        print('error')
+    finally:
+        db.session.close()
     # TODO: modify data to be the data object returned from db insertion
 
     # on successful db insert, flash success
     flash('Venue ' + request.form['name'] + ' was successfully listed!')
-    print(request.form)
     # TODO: on unsuccessful db insert, flash an error instead.
     # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
     # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
