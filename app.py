@@ -1,6 +1,7 @@
 #----------------------------------------------------------------------------#
 # Imports
 #----------------------------------------------------------------------------#
+from dataclasses import dataclass
 import json
 import dateutil.parser
 import babel
@@ -30,6 +31,7 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 
 
+@dataclass
 class City(db.Model):
     __tablename__ = 'cities'
 
@@ -38,7 +40,11 @@ class City(db.Model):
     state = db.Column(db.String(120))
     venues = db.relationship('Venue', backref='city')
 
+    def __repr__(self):
+        return f'<City ID: {self.id}, City: {self.city}, State: {self.state}, Venues: {self.venues}>'
 
+
+@dataclass
 class Venue(db.Model):
     __tablename__ = 'venues'
 
@@ -58,7 +64,11 @@ class Venue(db.Model):
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
+    def __repr__(self):
+        return f'<Venue ID: {self.id}, phone: {self.phone}, Name: {self.name}>'
 
+
+@dataclass
 class Artist(db.Model):
     __tablename__ = 'artists'
 
@@ -75,6 +85,8 @@ class Artist(db.Model):
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
+    def __repr__(self):
+        return f'<Artist ID: {self.id}, phone: {self.phone}, Name: {self.name}>'
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 
 
@@ -121,7 +133,8 @@ def venues():
     # TODO: replace with real venues data.
     #       num_shows should be aggregated based on number of upcoming shows per venue.
     cities = City.query.join('venues').all()
-    print(cities[0].venues)
+
+    print(cities)
     data = [{
         "city": "San Francisco",
         "state": "CA",
@@ -143,7 +156,7 @@ def venues():
             "num_upcoming_shows": 0,
         }]
     }]
-    print(data)
+
     return render_template('pages/venues.html', areas=data)
 
 
@@ -488,10 +501,28 @@ def create_artist_form():
 def create_artist_submission():
     # called upon submitting the new artist listing form
     # TODO: insert form data as a new Venue record in the db, instead
+    try:
+        artist = Artist.query.filter_by(name=request.form['name']).first()
+        if not artist:
+            artist = Artist(
+                name=request.form['name'], address=request.form['address'], phone=request.form['phone'], genres=request.form.getlist('genres'), facebook_link=request.form['facebook_link'])
+
+            db.session.add(artist)
+            db.session.commit()
+            flash('Artist ' + request.form['name'] +
+                  ' was successfully listed!')
+        else:
+            flash('Artist ' + request.form['name'] +
+                  ' Already exists!')
+    except Exception as err:
+        db.session.rollback()
+        print(err)
+    finally:
+        db.session.close()
     # TODO: modify data to be the data object returned from db insertion
 
     # on successful db insert, flash success
-    flash('Artist ' + request.form['name'] + ' was successfully listed!')
+
     # TODO: on unsuccessful db insert, flash an error instead.
     # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
     return render_template('pages/home.html')
